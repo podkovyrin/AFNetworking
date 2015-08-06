@@ -338,7 +338,11 @@ expectedTotalBytes:(int64_t)expectedTotalBytes {
     NSParameterAssert(delegate);
 
     [self.lock lock];
-    [task addObserver:self forKeyPath:NSStringFromSelector(@selector(state)) options:NSKeyValueObservingOptionOld |NSKeyValueObservingOptionNew context:AFTaskStateChangedContext];
+    
+    // Workaround for https://github.com/AFNetworking/AFNetworking/issues/1477
+    // TODO: Consider re-enabling this after the purported fix to KVO is in the wild on iOS 8/Yosemite.
+    //    [task addObserver:self forKeyPath:NSStringFromSelector(@selector(state)) options:NSKeyValueObservingOptionOld |NSKeyValueObservingOptionNew context:AFTaskStateChangedContext];
+    
     self.mutableTaskDelegatesKeyedByTaskIdentifier[@(task.taskIdentifier)] = delegate;
     [self.lock unlock];
 }
@@ -412,7 +416,10 @@ expectedTotalBytes:(int64_t)expectedTotalBytes {
     NSParameterAssert(task);
 
     [self.lock lock];
-    [task removeObserver:self forKeyPath:NSStringFromSelector(@selector(state)) context:AFTaskStateChangedContext];
+    // Workaround for https://github.com/AFNetworking/AFNetworking/issues/1477
+    // TODO: Consider re-enabling this after the purported fix to KVO is in the wild on iOS 8/Yosemite.
+    //    [task removeObserver:self forKeyPath:NSStringFromSelector(@selector(state)) context:AFTaskStateChangedContext];
+    
     [self.mutableTaskDelegatesKeyedByTaskIdentifier removeObjectForKey:@(task.taskIdentifier)];
     [self.lock unlock];
 }
@@ -706,9 +713,11 @@ didBecomeInvalidWithError:(NSError *)error
 
     [self.session getTasksWithCompletionHandler:^(NSArray *dataTasks, NSArray *uploadTasks, NSArray *downloadTasks) {
         NSArray *tasks = [@[dataTasks, uploadTasks, downloadTasks] valueForKeyPath:@"@unionOfArrays.self"];
-        for (NSURLSessionTask *task in tasks) {
-            [task removeObserver:self forKeyPath:NSStringFromSelector(@selector(state)) context:AFTaskStateChangedContext];
-        }
+        // Workaround for https://github.com/AFNetworking/AFNetworking/issues/1477
+        // TODO: Consider re-enabling this after the purported fix to KVO is in the wild on iOS 8/Yosemite.
+        //        for (NSURLSessionTask *task in tasks) {
+        //            [task removeObserver:self forKeyPath:NSStringFromSelector(@selector(state)) context:AFTaskStateChangedContext];
+        //        }
 
         [self removeAllDelegates];
     }];
