@@ -341,7 +341,9 @@ expectedTotalBytes:(int64_t)expectedTotalBytes {
     
     // Workaround for https://github.com/AFNetworking/AFNetworking/issues/1477
     // TODO: Consider re-enabling this after the purported fix to KVO is in the wild on iOS 8/Yosemite.
-    //    [task addObserver:self forKeyPath:NSStringFromSelector(@selector(state)) options:NSKeyValueObservingOptionOld |NSKeyValueObservingOptionNew context:AFTaskStateChangedContext];
+#if DEBUG
+    [task addObserver:self forKeyPath:NSStringFromSelector(@selector(state)) options:NSKeyValueObservingOptionOld |NSKeyValueObservingOptionNew context:AFTaskStateChangedContext];
+#endif
     
     self.mutableTaskDelegatesKeyedByTaskIdentifier[@(task.taskIdentifier)] = delegate;
     [self.lock unlock];
@@ -418,7 +420,9 @@ expectedTotalBytes:(int64_t)expectedTotalBytes {
     [self.lock lock];
     // Workaround for https://github.com/AFNetworking/AFNetworking/issues/1477
     // TODO: Consider re-enabling this after the purported fix to KVO is in the wild on iOS 8/Yosemite.
-    //    [task removeObserver:self forKeyPath:NSStringFromSelector(@selector(state)) context:AFTaskStateChangedContext];
+#if DEBUG
+    [task removeObserver:self forKeyPath:NSStringFromSelector(@selector(state)) context:AFTaskStateChangedContext];
+#endif
     
     [self.mutableTaskDelegatesKeyedByTaskIdentifier removeObjectForKey:@(task.taskIdentifier)];
     [self.lock unlock];
@@ -715,9 +719,11 @@ didBecomeInvalidWithError:(NSError *)error
         NSArray *tasks = [@[dataTasks, uploadTasks, downloadTasks] valueForKeyPath:@"@unionOfArrays.self"];
         // Workaround for https://github.com/AFNetworking/AFNetworking/issues/1477
         // TODO: Consider re-enabling this after the purported fix to KVO is in the wild on iOS 8/Yosemite.
-        //        for (NSURLSessionTask *task in tasks) {
-        //            [task removeObserver:self forKeyPath:NSStringFromSelector(@selector(state)) context:AFTaskStateChangedContext];
-        //        }
+#if DEBUG
+        for (NSURLSessionTask *task in tasks) {
+            [task removeObserver:self forKeyPath:NSStringFromSelector(@selector(state)) context:AFTaskStateChangedContext];
+        }
+#endif
 
         [self removeAllDelegates];
     }];
